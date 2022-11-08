@@ -1,0 +1,123 @@
+#!bc -l
+
+# Defines a set of utility functions for the bc calculator
+
+define fact(n) {
+    auto r, i;
+    r = 1;
+    for (i = 1; i <= n; i++) {
+        r *= i;
+    };
+    return (r);
+}
+
+define choose(a, b) {
+    return (fact(a) / fact(b) / fact(a - b));
+}
+
+define log2(a) {
+    return (l(a) / l(2));
+}
+
+define ln(a) {
+    return (l(a));
+}
+
+define log(a) {
+    return (l(a) / l(10));
+}
+
+define log(a, b) {
+    return (l(a) / l(b));
+}
+
+define sin(a) {
+    auto cospart;
+    cospart = c(a);
+
+    return (sqrt(1 - cospart * cospart));
+}
+
+define cos(a) {
+    return (c(a));
+}
+
+define tan(a) {
+    return (sin(a) / cos(a));
+}
+
+define exp(a) {
+    return (e(a));
+}
+
+define floor(n) {
+    auto oldscale, res;
+    oldscale = scale;
+    scale = 0;
+    res = n / 1 * 1;
+    scale = oldscale;
+
+    return ( res );
+}
+
+define round(n) {
+    return ( floor(n + 0.5) );
+}
+
+define mod(a, b) {
+    auto res, oldscale;
+    oldscale = scale;
+    scale = 0;
+    res = a % b;
+    scale = oldscale;
+
+    return (res);
+}
+
+# Returns true iff a divides b
+define divides(a, b) {
+    return (b >= a && mod(b, a) == 0);
+}
+
+# Computes a^b, where b can be fractional.
+define pow(a, b) {
+    auto res;
+
+    if (round(b) == b) {
+        res = a^b;
+    } else {
+        res = e(b * ln(a));
+    }
+
+    return (  res  );
+}
+
+define pmf_binom(n, k, p) {
+    return ( choose(n, k) * pow(p, k) * pow(1 - p, n - k) );
+}
+
+define pmf_poisson(lambda, k) {
+    return ( exp(-lambda) * pow(lambda, k) / fact(k) );
+}
+
+define simplify(numer, denom) {
+    auto a, b;
+    a = 2;
+    b = 0;
+    while (a <= numer / 2 || a <= denom / 2) {
+        while (divides(a, numer) && divides(a, denom)) {
+            numer /= a;
+            denom /= a;
+        }
+
+        if (divides(1000000, b)) {
+            print "...", a, ": (", floor(numer), "/", floor(denom), ") ";
+        }
+
+        b = b + 1;
+        a = b * 2 + 1;
+    }
+
+    print " (", round(numer), "/", round(denom), ") ";
+}
+

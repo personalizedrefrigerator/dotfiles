@@ -8,7 +8,33 @@ endif
 
 filetype on
 filetype plugin on
-filetype indent off
+filetype plugin indent on
+
+colo industry
+
+
+" UltiSnips configuration
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+let g:UltiSnipsEditSplit="vertical"
+let g:vimtex_fold_manual=1
+let g:vimtex_matchparen_enabled = 0
+let g:vimtex_view_automatic=0
+let g:vimtex_syntax_custom_cmds = [
+            \ {'name': 'bE', 'mathmode': 1, 'concealchar': '𝔼'},
+            \ {'name': 'bR', 'mathmode': 1, 'concealchar': 'ℝ'},
+            \ {'name': 'Prob', 'mathmode': 1, 'concealchar': 'ℙ'},
+            \ {'name': 'bP', 'mathmode': 1, 'concealchar': 'ℙ'},
+            \ {'name': 'justf', 'mathmode': 1, 'argstyle': 'ital', 'conceal': 1},
+            \ {'name': 'difftl', 'mathmode': 1, 'concealchar': 'd'},
+            \ ]
+let g:vimtex_compiler_engine = 'lualatex'
+
+" Disable custom warnings based on regexp
+let g:vimtex_quickfix_ignore_filters = [
+      \ 'Font Warning: Font shape.*using',
+      \]
 
 " Set indentation!
 set tabstop=4    " Tabs are 4 chars wide
@@ -20,7 +46,7 @@ set expandtab
 set pastetoggle=<f5> " When pasting, don't indent. F5 toggles this.
 set mouse=a
 set nu " Show line numbers.
-colo koehler
+set conceallevel=2
 
 syntax enable
 filetype plugin indent on
@@ -31,6 +57,7 @@ autocmd FileType make set noexpandtab shiftwidth=8 softtabstop=0
 
 if has("nvim")
   autocmd TermOpen * setlocal nonumber norelativenumber
+  tnoremap <c-W> <c-\><c-n>
 endif
 
 " Quickfix list (e.g. from :make)
@@ -57,9 +84,14 @@ inoremap <F8> <esc>:-1tabnext<return>i
 inoremap <C-H> <esc>bdwa
 inoremap <C-S> <esc>:w<return>i
 
+" Paste
+inoremap <c-V> <esc>"+pa
+" nnoremap <c-s-V> <esc>"+pa
+inoremap <c-s-V> <esc>"+pa
+
 " Tab switching and scrolling in terminals.
-tnoremap <F9> <c-W>:tabnext<return>
-tnoremap <F8> <c-W>:-1tabnext<return>
+tmap <F9> <c-W>:tabnext<return>
+tmap <F8> <c-W>:-1tabnext<return>
 tnoremap <ScrollWheelUp> <Up>
 tnoremap <ScrollWheelDown> <Down>
 
@@ -125,3 +157,12 @@ if filereadable(expand("~/.vim_extra"))
     source ~/.vim_extra
 endif
 
+
+set conceallevel=1
+let g:tex_conceal='abdmgs'
+"let g:tex_flavor='latex'
+autocmd FileType tex highlight clear Conceal
+autocmd FileType man setlocal nonu
+
+" Needed by Joplin when running as an external editor
+nnoremap ,w :w<CR>:!touch %<CR>

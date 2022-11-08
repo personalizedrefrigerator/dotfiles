@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+#
+# Counts up from zero
+#
+# Licensed under the MIT
+#
+
+import time
+
+COLOR_RED = '\x1b[33m'
+COLOR_GREEN = '\x1b[32m'
+COLOR_ORANGE = '\x1b[93m'
+COLOR_CLEAR = '\x1b[0m'
+
+def main():
+    start_time_s = time.monotonic()
+
+    while True:
+        time.sleep(0.5)
+        dt = int(time.monotonic() - start_time_s)
+        dt_s = dt % 60
+        dt_m = dt // 60
+        dt_h = dt_m // 60
+        print('\r{}{:0>2}{}:{}{:0>2}{}:{}{:0>2}{}'.format(
+                COLOR_RED, dt_h, COLOR_CLEAR,
+                COLOR_GREEN, dt_m, COLOR_CLEAR,
+                COLOR_ORANGE, dt_s, COLOR_CLEAR),
+            end='\t'
+        )
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("")
+        print("Caught ^C")

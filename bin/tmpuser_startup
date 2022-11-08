@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Help with read in bash: https://stackoverflow.com/questions/1885525/how-do-i-prompt-a-user-for-confirmation-in-bash-script
+
+function print_command() {
+    echo -ne '\x1b[33m$\x1b[0m '
+    echo "$1"
+}
+
+function print_and_run() {
+    print_command "$1"
+    echo "$1" | sh -
+}
+
+function cleanup() {
+    if test -d /home/tmpuser ; then
+        echo 'Cleaning up.'
+        echo -e '\x1b[31mTo remove\x1b[0m /home/tmpuser, user tmpuser.'
+        read -p 'Continue? [y/n] ' -n 1
+        echo
+        if test ! "x$REPLY" = 'xy' ; then
+            echo 'Exiting...'
+            exit 1
+        fi
+
+        print_and_run "userdel -f tmpuser"
+        print_and_run "rm -rf /home/tmpuser"
+    fi
+}
+
+cleanup
+
+if test ! -d /home/tmpuser ; then
+    echo -n "Creating tmpuser..."
+    tmpuser_home="/home/tmpuser"
+    hostuser_home="/home/selenite"
+
+    useradd tmpuser -c 'temporary user for building, etc.'
+    mkdir "$tmpuser_home"
+
+    cp "$hostuser_home/.vimrc" "$tmpuser_home/.vimrc"
+    cp "$hostuser_home/.zshrc" "$tmpuser_home/.zshrc"
+    mkdir -p "$tmpuser_home/.ssh"
+    cp "$hostuser_home/.ssh/known_hosts" "$tmpuser_home/.ssh/known_hosts"
+    chown -R tmpuser "$tmpuser_home"
+    chsh tmpuser -s /usr/bin/zsh
+
+    echo " Done."
+fi
+
+TMP_DIR=$(mktemp -d -q)
+print_command "mkdir '$TMP_DIR' ; cd '$TMP_DIR'"
+orig_dir=$(pwd)
+cd "$TMP_DIR"
+
+print_and_run "chown tmpuser '$TMP_DIR'"
+
+print_command "su tmpuser"
+su tmpuser
+
+cd "$orig_dir"
+print_and_run "rm -rf '$TMP_DIR'"
+cleanup
+

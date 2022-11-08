@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+#
+# Computes the diff between two given images
+#
+
+from PIL import Image
+from argparse import ArgumentParser
+import os.path
+
+EXT_TO_FORMAT_MAP = {
+    'jpg': "JPEG",
+    'png': "PNG",
+}
+
+NO_PX_AVAILABLE_COLOR = [ 255, 0, 0, 255 ]
+
+DIFF_THRESHOLD = 124
+MATCHING_INTENSITY_MUL = 85 / 255
+DIFF_MIN_INTENSITY = 120
+
+def img_diff(diff_threshold, left, right):
+    left.convert("RGBA")
+    right.convert("RGBA")
+
+    result = []
+
+    width, height = ( max(left.width, right.width), max(left.height, right.height) )
+
+    def push_component(val):
+        assert(val >= 0 and val < 256)
+        result.append(int(val))
+
+    for y in range(0, height):
+        for x in range(0, width):
+            if x >= min(left.width, right.width) or y >= min(left.height, right.height):
+                push_component(NO_PX_AVAILABLE_COLOR)
+                push_component(NO_PX_AVAILABLE_COLOR)
+                push_component(NO_PX_AVAILABLE_COLOR)
+                push_component(255)
+                continue
+
+            leftR, leftG, leftB, leftA = left.getpixel((x, y))
+            rightR, rightG, rightB, rightA = right.getpixel((x, y))
+
+            diff = (leftR - rightR) ** 2 + (leftG - rightG) ** 2 + (leftB - rightB) ** 2 \
+                    + (leftA - rightA) ** 2
+
+            if diff < diff_threshold:
+                push_component(leftR * MATCHING_INTENSITY_MUL)
+                push_component(leftG * MATCHING_INTENSITY_MUL)
+                push_component(leftB * MATCHING_INTENSITY_MUL)
+                push_component(leftA)
+            else:
+                handleComponent = lambda l, r: \
+                        int(abs(l - r) * (255 - DIFF_MIN_INTENSITY) / 255 + DIFF_MIN_INTENSITY)
+                diffR = handleComponent(leftR, rightR)
+                diffG = handleComponent(leftG, rightG)
+                diffB = handleComponent(leftB, rightB)
+
+                push_component(diffR)
+                push_component(diffG)
+                push_component(diffB)
+                push_component(255)
+
+    return Image.frombuffer('RGBA', (width, height), bytes(result))
+
+
+def main():
+    argParser = ArgumentParser(description="Compute the diff between two images")
+    argParser.add_argument("img1", type=str, help='Path to the first image')
+    argParser.add_argument("img2", type=str, help='Path to the second image')
+    argParser.add_argument("out", type=str, help='Output path')
+    args = argParser.parse_args()
+
+    print("Diff %s %s -> %s" % (args.img1, args.img2, args.out))
+
+    with Image.open(args.img1) as im1:
+        with Image.open(args.img2) as im2:
+            outName, outFormat = os.path.splitext(args.out)
+            outFormat = outFormat[1:] # Remove starting '.'
+
+            if outFormat in EXT_TO_FORMAT_MAP:
+                outFormat = EXT_TO_FORMAT_MAP[outFormat]
+
+            result = img_diff(DIFF_THRESHOLD, im1, im2)
+            result.save(args.out, outFormat.upper())
+
+if __name__ == "__main__":
+    main()
