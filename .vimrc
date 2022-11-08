@@ -118,7 +118,6 @@ endfun
 
 command! -nargs=+ Search :call Search(<f-args>)
 
-source $VIMRUNTIME/ftplugin/git.vim
 source $VIMRUNTIME/ftplugin/man.vim
 
 " Extra customization by other users that use this same vimrc file
