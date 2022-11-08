@@ -2,6 +2,8 @@
 import subprocess, os, sys, re
 import pty
 
+# Main repository: https://github.com/personalizedrefrigerator/tts_shell
+
 # Ref:
 # https://docs.python.org/3/library/pty.html
 # https://stackoverflow.com/questions/52954248/capture-output-as-a-tty-in-python
