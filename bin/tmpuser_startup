@@ -3,7 +3,7 @@
 # Sets up and creates a temporary user. Requires root permissions.
 # Help with read in bash: https://stackoverflow.com/questions/1885525/how-do-i-prompt-a-user-for-confirmation-in-bash-script
 
-hostuser_home="/home/selenite"
+hostuser_home="$HOME"
 
 function print_command() {
     echo -ne '\x1b[33m$\x1b[0m '
